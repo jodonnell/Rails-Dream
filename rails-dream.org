@@ -1,0 +1,37 @@
+* Rails Dream
+** Auto-Complete rails methods that are appropriate for the context
+*** Find context
+*** Gather list
+*** Place it in a buffer
+** Easily see all methods in a given context
+*** Find context
+*** Gather list
+*** Class methods and Object methods
+**** Would need to parse whether you are in def to determine if class methods or object methods are displayed
+*** Possible implentation details
+**** Find context by looking at superclass
+**** rails c
+***** ActionController::Base.instance_methods - Object.methods
+***** ActionController::Base.methods - Object.methods
+
+**** In depth
+***** startup
+****** Open shell
+****** rails c
+***** call
+****** get SuperClass
+****** ActionController::Base.instance_methods - Object.methods
+****** ActionController::Base.methods - Object.methods
+****** Copy output to buffer
+****** Reformat
+
+** On keystroke at end of rails method display args
+*** ri form_tag -T
+*** search for form_tag(
+*** somehow display options
+*** possibly try to cover edge cases like Options for form_tag
+** On keystroke at end of rails method open documentation
+*** ri form_tag -T
+** Other Notes
+*** Minor mode would be nice
+*** Would prefer to make this work if rails changed
