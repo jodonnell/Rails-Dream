@@ -1,8 +1,10 @@
 (defun open-rails-console-buffer ()
-  (shell "rails-console-buffer")
-  (sit-for 2)
-  (insert "rails c")
-  (comint-send-input))
+  (save-excursion
+    (shell "rails-console-buffer")
+    (sit-for 1)
+    (insert "rails c")
+    (comint-send-input)
+    (sit-for 6)))
 
 (defun get-superclass ()
   (beginning-of-buffer)
@@ -44,6 +46,15 @@
     (erase-buffer)
     (insert list-of-methods)
     (beginning-of-buffer)))
+
+
+(defun get-class-methods-current ()
+  (interactive)
+  (if (not (get-buffer "rails-console-buffer"))
+      (open-rails-console-buffer))
+  (get-class-methods (get-superclass)))
+
+
 
 (open-rails-console-buffer)
 (get-instance-methods "ActionController::Base")
