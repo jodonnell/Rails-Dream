@@ -1,6 +1,6 @@
 (defun open-rails-console-buffer ()
   (shell "rails-console-buffer")
-  (sleep-for 2)
+  (sit-for 2)
   (insert "rails c")
   (comint-send-input))
 
@@ -14,11 +14,18 @@
     (search-forward-regexp "[_A-Za-z0-9]+")
     (setq class (buffer-substring begin-of-class (point)))))
 
-(defun get-instance-methods ()
+
+(defun get-instance-methods (class-name)
+  (get-methods class-name "instance_methods"))
+
+(defun get-class-methods (class-name)
+  (get-methods class-name "methods"))
+
+(defun get-methods (class-name method-type)
   (set-buffer "rails-console-buffer")
   (erase-buffer)
 
-  (process-send-string "rails-console-buffer" "(ActionController::Base.instance_methods - Object.methods).collect {|method| puts method.to_s}\n")
+  (process-send-string "rails-console-buffer" (concat "(" class-name "." method-type " - Object.methods).sort.collect {|method| puts method.to_s}\n"))
   (sit-for 0.5)
 
   (beginning-of-buffer)
@@ -26,19 +33,21 @@
   (next-line)
   (beginning-of-line)
 
-  (let (begin-of-methods)
-    (setq begin-of-methods (point))
+  (let (begin-of-methods-pos)
+    (setq begin-of-methods-pos (point))
     (search-forward ">")
     (previous-line)
     (end-of-line)
-    (setq class (buffer-substring begin-of-methods (point)))
-    (get-buffer-create "ActionController::Base instance methods")
-    (switch-to-buffer "ActionController::Base instance methods")
-
-
-    (insert class)))
+    (setq list-of-methods (buffer-substring begin-of-methods-pos (point)))
+    (get-buffer-create (concat class-name " " method-type))
+    (switch-to-buffer (concat class-name " " method-type))
+    (erase-buffer)
+    (insert list-of-methods)
+    (beginning-of-buffer)))
 
 (open-rails-console-buffer)
-(get-instance-methods)
+(get-instance-methods "ActionController::Base")
+(get-class-methods "ActionController::Base")
+(get-instance-methods "HoneyPieController")
 
   
