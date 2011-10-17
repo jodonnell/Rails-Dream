@@ -8,19 +8,20 @@
     (sit-for 12)
     (switch-to-buffer old-buffer)))
 
-(defun get-superclass ()
+(defun get-class ()
   (save-excursion
     (beginning-of-buffer)
-    (search-forward "class ")
-    (search-forward "<")
-    (search-forward-regexp "[ \t]*")
+    (search-forward-regexp "class[ \t]*")
     (get-token)))
 
 (defun get-token ()
   (let (begin-of-token)
     (setq begin-of-token (point))
-    (search-forward-regexp "[_A-Za-z0-9]+")
+    (search-forward-regexp (token-regexp))
     (buffer-substring begin-of-token (point))))
+
+(defun token-regexp ()
+  "[_A-Za-z0-9]+")
 
 (defun get-instance-methods (class-name)
   (get-methods class-name "instance_methods"))
@@ -64,11 +65,11 @@
 
 (defun get-class-methods-current ()
   (interactive)
-  (get-class-methods (get-superclass)))
+  (get-class-methods (get-class)))
 
 (defun get-instance-methods-current ()
   (interactive)
-  (get-instance-methods (get-superclass)))
+  (get-instance-methods (get-class)))
 
 ;(open-rails-console-buffer)
 ;(get-instance-methods "ActionController::Base")
