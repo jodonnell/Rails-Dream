@@ -14,17 +14,32 @@
     (search-forward "class ")
     (search-forward "<")
     (search-forward-regexp "[ \t]*")
-    (let (begin-of-class)
-      (setq begin-of-class (point))
-      (search-forward-regexp "[_A-Za-z0-9]+")
-      (setq class (buffer-substring begin-of-class (point))))))
+    (get-token)))
 
+(defun get-token ()
+  (let (begin-of-token)
+    (setq begin-of-token (point))
+    (search-forward-regexp "[_A-Za-z0-9]+")
+    (buffer-substring begin-of-token (point))))
 
 (defun get-instance-methods (class-name)
   (get-methods class-name "instance_methods"))
 
 (defun get-class-methods (class-name)
   (get-methods class-name "methods"))
+
+(defun get-rails-console-clean-method-output ()
+  (beginning-of-buffer)
+  (next-line)
+  (next-line)
+  (beginning-of-line)
+
+  (let (begin-of-methods-pos)
+    (setq begin-of-methods-pos (point))
+    (search-forward ">")
+    (previous-line)
+    (end-of-line)
+    (buffer-substring begin-of-methods-pos (point))))
 
 (defun get-methods (class-name method-type)
   (save-excursion
@@ -35,22 +50,11 @@
     (process-send-string "rails-console-buffer" (concat "(" class-name "." method-type " - Object.methods).sort.collect {|method| puts method.to_s}\n"))
     (sit-for 2)
 
-    (beginning-of-buffer)
-    (next-line)
-    (next-line)
-    (beginning-of-line)
-
-    (let (begin-of-methods-pos)
-      (setq begin-of-methods-pos (point))
-      (search-forward ">")
-      (previous-line)
-      (end-of-line)
-      (setq list-of-methods (buffer-substring begin-of-methods-pos (point)))
-      (get-buffer-create (concat class-name " " method-type))
-      (switch-to-buffer (concat class-name " " method-type))
-      (erase-buffer)
-      (insert list-of-methods)
-      (beginning-of-buffer))))
+    (setq list-of-methods (get-rails-console-clean-method-output))
+    (switch-to-buffer (get-buffer-create (concat class-name " " method-type)))
+    (erase-buffer)
+    (insert list-of-methods)
+    (beginning-of-buffer)))
 
 
 (defun create-rails-console-buffer-if-does-not-exist ()
