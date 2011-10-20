@@ -32,6 +32,7 @@
 *** possibly try to cover edge cases like Options for form_tag
 ** On keystroke at end of rails method open documentation
 *** ri form_tag -T
+** Be able to search through the all the documentation, or through a set of methods
 ** Other Notes
 *** Minor mode would be nice
 *** Would prefer to make this work if rails changed
