@@ -48,11 +48,13 @@
 (defun get-methods (class-name method-type)
   (save-excursion
     (call-interactive-shell-command "rails-console-buffer" "rails c\n" (concat "(" class-name "." method-type " - Object.methods).sort.collect {|method| puts method.to_s}\n"))
+    (create-cleaned-output-buffer (concat class-name " " method-type) 'get-rails-console-clean-method-output)))
 
-    (switch-to-buffer (get-buffer-create (concat class-name " " method-type)))
+(defun create-cleaned-output-buffer (buffer-name clean-output-function)
+    (switch-to-buffer (get-buffer-create buffer-name))
     (erase-buffer)
-    (insert (get-rails-console-clean-method-output))
-    (beginning-of-buffer)))
+    (insert (funcall clean-output-function))
+    (beginning-of-buffer))
 
 (defun get-instance-methods (class-name)
   (get-methods class-name "instance_methods"))
