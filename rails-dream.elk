@@ -2,22 +2,23 @@
 
 (cd "/Users/jacobodonnell/programming/the_honey_pie_star_chart")
 
+(defun is-found-in-buffer (search buffer)
+  (save-current-buffer
+    (set-buffer buffer)
+    (search-forward search nil t)))
+
 (deftest "test instance methods"
   (get-instance-methods-current)
 
   (let (save-found)
-    (setq save-found (save-current-buffer
-                       (set-buffer "User instance_methods")
-                       (search-forward "save!" nil t)))
+    (setq save-found (is-found-in-buffer "save!" "User instance_methods"))
     (assert-nonnil save-found)))
 
 (deftest "test class methods"
   (get-class-methods-current)
 
   (let (save-found)
-    (setq save-found (save-current-buffer
-                       (set-buffer "User methods")
-                       (search-forward "first!" nil t)))
+    (setq save-found (is-found-in-buffer "first!" "User methods"))
     (assert-nonnil save-found)))
 
 
@@ -25,7 +26,5 @@
   (get-rails-documentation-for-function "form_for")
 
   (let (save-found)
-    (setq save-found (save-current-buffer
-                       (set-buffer "form_for documentation")
-                       (search-forward "form_for(" nil t)))
+    (setq save-found (is-found-in-buffer "form_for(" "form_for documentation"))
     (assert-nonnil save-found)))
