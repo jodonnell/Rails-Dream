@@ -1,18 +1,18 @@
-(defun create-rails-console-buffer-if-does-not-exist ()
-  (if (not (get-buffer "rails-console-buffer"))
-      (open-rails-console-buffer)))
+(defun create-console-buffer-if-does-not-exist (buffer-name command)
+  (if (not (get-buffer buffer-name))
+      (open-console-buffer buffer-name command)))
 
-(defun create-rails-console-buffer ()
+(defun open-console-buffer (buffer-name command)
+  (create-console-buffer buffer-name)
+  (sit-for 1)
+  (process-send-string buffer-name command)
+  (sit-for 8))
+
+(defun create-console-buffer (buffer-name)
   (let (old-buffer)
     (setq old-buffer (current-buffer))
-    (shell "rails-console-buffer")
+    (shell buffer-name)
     (switch-to-buffer old-buffer)))
-
-(defun open-rails-console-buffer ()
-  (create-rails-console-buffer)
-  (sit-for 1)
-  (process-send-string "rails-console-buffer" "rails c\n")
-  (sit-for 8))
 
 (defun get-class ()
   (save-excursion
@@ -46,7 +46,7 @@
 
 (defun get-methods (class-name method-type)
   (save-excursion
-    (create-rails-console-buffer-if-does-not-exist)
+    (create-console-buffer-if-does-not-exist "rails-console-buffer" "rails c\n")
     (set-buffer "rails-console-buffer")
     (erase-buffer)
 
@@ -77,4 +77,3 @@
 ;(get-class-methods "ActionController::Base")
 ;(get-instance-methods "HoneyPieController")
 
-  
