@@ -1,5 +1,3 @@
-; class User
-
 (cd "/Users/jacobodonnell/programming/the_honey_pie_star_chart")
 
 (defun is-found-in-buffer (search buffer)
@@ -8,14 +6,14 @@
     (search-forward search nil t)))
 
 (deftest "test instance methods"
-  (get-instance-methods-current)
+  (get-instance-methods "User")
 
   (let (save-found)
     (setq save-found (is-found-in-buffer "save!" "User instance_methods"))
     (assert-nonnil save-found)))
 
 (deftest "test class methods"
-  (get-class-methods-current)
+  (get-class-methods "User")
 
   (let (save-found)
     (setq save-found (is-found-in-buffer "first!" "User methods"))
