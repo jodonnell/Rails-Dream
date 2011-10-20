@@ -21,3 +21,11 @@
     (assert-nonnil save-found)))
 
 
+(deftest "test get-rails-documentation-for-function"
+  (get-rails-documentation-for-function "form_for")
+
+  (let (save-found)
+    (setq save-found (save-current-buffer
+                       (set-buffer "form_for documentation")
+                       (search-forward "form_for(" nil t)))
+    (assert-nonnil save-found)))

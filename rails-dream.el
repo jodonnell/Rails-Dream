@@ -77,10 +77,15 @@
 ;(get-class-methods "ActionController::Base")
 ;(get-instance-methods "HoneyPieController")
 
+(defun get-rails-documentation-for-function (function)
+  (save-excursion
+    (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" (concat function "\n"))
+    (create-cleaned-output-buffer (concat function " documentation") 'get-ri-console-clean-output)))
+
 (defun get-rails-documentation ()
   (interactive)
-  (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" (concat (thing-at-point 'symbol) "\n"))
-  (create-cleaned-output-buffer (concat (thing-at-point 'symbol) " documentation") 'get-ri-console-clean-output))
+  (get-rails-documentation-for-function (thing-at-point 'symbol)))
+  
 
 (defun get-ri-console-clean-output ()
   (save-excursion
