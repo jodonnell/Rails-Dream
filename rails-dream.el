@@ -1,3 +1,5 @@
+;  "class User"
+
 (defun create-console-buffer-if-does-not-exist (buffer-name command)
   (defun open-console-buffer ()
     (create-console-buffer)
@@ -75,4 +77,18 @@
 ;(get-class-methods "ActionController::Base")
 ;(get-instance-methods "HoneyPieController")
 
+; (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" "form_tag\n")
+
+(deftest "testing methods"
+
+  (cd "/Users/jacobodonnell/programming/the_honey_pie_star_chart")
+  (get-instance-methods-current)
+
+  (let (old-buffer save-found)
+    (setq old-buffer (current-buffer))
+    (set-buffer "User instance_methods")
+    (setq save-found (search-forward "save!" nil t)
+    (switch-to-buffer old-buffer))
+    
+    (assert-nonnil save-found)))
 
