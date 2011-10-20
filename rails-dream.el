@@ -18,16 +18,7 @@
   (save-excursion
     (beginning-of-buffer)
     (search-forward-regexp "class[ \t]*")
-    (get-token)))
-
-(defun get-token ()
-  (let (begin-of-token)
-    (setq begin-of-token (point))
-    (search-forward-regexp (token-regexp))
-    (buffer-substring begin-of-token (point))))
-
-(defun token-regexp ()
-  "[_A-Za-z0-9]+")
+    (thing-at-point 'word)))
 
 (defun get-rails-console-clean-method-output ()
   (save-excursion
