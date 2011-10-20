@@ -1,0 +1,23 @@
+; class User
+
+(cd "/Users/jacobodonnell/programming/the_honey_pie_star_chart")
+
+(deftest "test instance methods"
+  (get-instance-methods-current)
+
+  (let (save-found)
+    (setq save-found (save-current-buffer
+                       (set-buffer "User instance_methods")
+                       (search-forward "save!" nil t)))
+    (assert-nonnil save-found)))
+
+(deftest "test class methods"
+  (get-class-methods-current)
+
+  (let (save-found)
+    (setq save-found (save-current-buffer
+                       (set-buffer "User methods")
+                       (search-forward "first!" nil t)))
+    (assert-nonnil save-found)))
+
+
