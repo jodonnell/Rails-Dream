@@ -77,5 +77,21 @@
 ;(get-class-methods "ActionController::Base")
 ;(get-instance-methods "HoneyPieController")
 
-; (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" "form_tag\n")
+(defun get-rails-documentation ()
+  (interactive)
+  (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" (concat (thing-at-point 'symbol) "\n"))
+  (create-cleaned-output-buffer (concat (thing-at-point 'symbol) " documentation") 'get-ri-console-clean-output))
 
+(defun get-ri-console-clean-output ()
+  (save-excursion
+    (set-buffer "ri-console-buffer")
+    (beginning-of-buffer)
+    (next-line 3)
+    (beginning-of-line)
+
+    (let (begin-of-methods-pos)
+      (setq begin-of-methods-pos (point))
+      (end-of-buffer)
+      (previous-line)
+      (end-of-line)
+      (buffer-substring begin-of-methods-pos (point)))))
