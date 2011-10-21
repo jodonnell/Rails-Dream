@@ -8,8 +8,7 @@
     (sit-for 8))
 
   (defun create-console-buffer ()
-    (let (old-buffer)
-      (setq old-buffer (current-buffer))
+    (let ((old-buffer (current-buffer)))
       (shell buffer-name)
       (switch-to-buffer old-buffer)))
 
@@ -30,8 +29,7 @@
     (next-line)
     (beginning-of-line)
 
-    (let (begin-of-methods-pos)
-      (setq begin-of-methods-pos (point))
+    (let ((begin-of-methods-pos (point)))
       (search-forward ">")
       (previous-line)
       (end-of-line)
@@ -94,9 +92,18 @@
     (next-line 3)
     (beginning-of-line)
 
-    (let (begin-of-methods-pos)
-      (setq begin-of-methods-pos (point))
+    (let ((begin-of-methods-pos (point)))
       (end-of-buffer)
       (previous-line)
       (end-of-line)
       (buffer-substring begin-of-methods-pos (point)))))
+
+
+(defun get-rails-function-argument-list (function) 
+    (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" (concat function "\n"))
+    (create-cleaned-output-buffer (concat function " args") 'get-ri-console-clean-output)
+    (search-forward (concat function "(") nil t)
+    (let ((begin-of-methods-pos (point)))
+      (search-forward ")" nil t)
+      (backward-char)
+      (buffer-substring begin-of-methods-pos (point))))

@@ -36,3 +36,4 @@
 ** Other Notes
 *** Minor mode would be nice
 *** Would prefer to make this work if rails changed
+*** On project switch it would be nice if this did too!

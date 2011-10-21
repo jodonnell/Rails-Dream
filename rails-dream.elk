@@ -26,3 +26,7 @@
   (let (save-found)
     (setq save-found (is-found-in-buffer "form_for(" "form_for documentation"))
     (assert-nonnil save-found)))
+
+(deftest "test get-rails-function-argument-list"
+  (assert-equal "record_or_name_or_array, *args, &proc" (get-rails-function-argument-list "form_for")))
+
