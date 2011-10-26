@@ -24,21 +24,6 @@
     (search-forward-regexp "class[ \t]*")
     (thing-at-point 'word)))
 
-(defun get-rails-console-clean-method-output ()
-  (save-excursion
-    (set-buffer "rails-console-buffer")
-    (beginning-of-buffer)
-    (next-line)
-    (next-line)
-    (beginning-of-line)
-
-    (let ((begin-of-methods-pos (point)))
-      (search-forward ">")
-      (previous-line)
-      (end-of-line)
-      (buffer-substring begin-of-methods-pos (point)))))
-
-
 (defun call-interactive-shell-command (buffer start-interactive-shell-command interactive-shell-command)
   (create-console-buffer-if-does-not-exist buffer start-interactive-shell-command)
   (process-send-string buffer interactive-shell-command))
@@ -49,7 +34,6 @@
 
     (set-process-filter (get-buffer-process "rails-console-buffer") 'rails-collect-and-cleanse-output)
     (call-interactive-shell-command "rails-console-buffer" "rails c\n" (concat "(" class-name "." method-type " - Object.methods).sort.collect {|method| puts method.to_s}\n"))))
-;    (create-cleaned-output-buffer (concat class-name " " method-type) 'get-rails-console-clean-method-output)))
 
 (defun create-cleaned-output-buffer (buffer-name clean-output-function)
     (switch-to-buffer (get-buffer-create buffer-name))
@@ -71,11 +55,6 @@
   (interactive)
   (get-instance-methods (get-class)))
 
-; (create-console-buffer-if-does-not-exist "rails-console-buffer" "rails c\n")
-;(get-instance-methods "ActionController::Base")
-;(get-class-methods "ActionController::Base")
-;(get-instance-methods "HoneyPieController")
-
 (defun get-rails-documentation-for-function (function)
   (save-excursion
     (create-or-empty-output-buffer (concat function "-documentation"))
@@ -88,37 +67,24 @@
   (interactive)
   (get-rails-documentation-for-function (thing-at-point 'symbol)))
   
-
-(defun get-ri-console-clean-output ()
-  (save-excursion
-    (set-buffer "ri-console-buffer")
-    (beginning-of-buffer)
-    (next-line 3)
-    (beginning-of-line)
-
-    (let ((begin-of-methods-pos (point)))
-      (end-of-buffer)
-      (previous-line)
-      (end-of-line)
-      (buffer-substring begin-of-methods-pos (point)))))
-
+(defun get-rails-function-argument-list-at-point ()
+  (interactive)
+  (message (get-rails-function-argument-list (thing-at-point 'symbol))))
 
 (defun get-rails-function-argument-list (function) 
-    (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" (concat function "\n"))
-    (create-cleaned-output-buffer (concat function " args") 'get-ri-console-clean-output)
-    (search-forward (concat function "(") nil t)t
-    (let ((begin-of-methods-pos (point)))
-      (search-forward ")" nil t)
-      (backward-char)
-      (buffer-substring begin-of-methods-pos (point))))
-
-; code to use filter to get shell rather than sit-for
-(defun remove-all-in-current-buffer (from)
-  (beginning-of-buffer)
-  (while (search-forward from nil t)
-    (replace-match "" nil t)))
+  (get-rails-documentation-for-function function)
+  (search-forward (concat function "(") nil t)t
+  (let ((begin-of-methods-pos (point)))
+    (search-forward ")" nil t)
+    (backward-char)
+    (buffer-substring begin-of-methods-pos (point))))
 
 (defun remove-shell-artifacts (output)
+  (defun remove-all-in-current-buffer (from)
+    (beginning-of-buffer)
+    (while (search-forward from nil t)
+      (replace-match "" nil t)))
+
   (insert (ansi-color-apply output))
   (font-lock-mode)
   (remove-all-in-current-buffer "\r")
