@@ -11,6 +11,25 @@
   (remove-all-in-current-buffer "\r")
   (remove-all-in-current-buffer ">>"))
 
+(defun ri-arguments-collect-and-cleanse-output (process output)
+  (set-buffer output-buffer)
+  (if (string-match "Nothing known about" output)
+      (message "You need to have buffer created")) ; do something
+  (if (string-match ">>" output)
+      (progn 
+        (remove-shell-artifacts output)
+
+        (beginning-of-buffer)
+        (kill-line 3)
+        
+        (search-forward (concat function-to-get-arguments "(") nil t)t
+        (let ((begin-of-methods-pos (point)))
+          (search-forward ")" nil t)
+          (backward-char)
+          (message (buffer-substring begin-of-methods-pos (point)))))
+
+    (insert (ansi-color-apply output))))
+
 (defun ri-collect-and-cleanse-output (process output)
   (set-buffer output-buffer)
   (if (string-match "Nothing known about" output)
@@ -114,16 +133,17 @@
     (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" (concat function "\n"))))
 
 ;;;;;;;;;;
-;; argumets functions
+;; arguments functions
 (defun get-rails-function-argument-list-at-point ()
   (interactive)
-  (message (get-rails-function-argument-list (thing-at-point 'symbol))))
+  (get-rails-function-argument-list (thing-at-point 'symbol)))
 
 (defun get-rails-function-argument-list (function) 
-  (get-rails-documentation-for-function function)
-  (search-forward (concat function "(") nil t)t
-  (let ((begin-of-methods-pos (point)))
-    (search-forward ")" nil t)
-    (backward-char)
-    (buffer-substring begin-of-methods-pos (point))))
+  (save-excursion
+    (create-or-empty-output-buffer (concat function "-documentation"))
+    (setq function-to-get-arguments function)
+    (create-console-buffer-if-does-not-exist "ri-console-buffer" "ri -i -T\n")
+
+    (set-process-filter (get-buffer-process "ri-console-buffer") 'ri-arguments-collect-and-cleanse-output)
+    (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" (concat function "\n"))))
 
