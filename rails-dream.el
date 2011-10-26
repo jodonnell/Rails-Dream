@@ -42,8 +42,7 @@
   (set-buffer buffer)
   (erase-buffer)
 
-  (process-send-string buffer interactive-shell-command)
-  (sit-for 2))
+  (process-send-string buffer interactive-shell-command))
 
 (defun get-methods (class-name method-type)
   (save-excursion
@@ -77,8 +76,13 @@
 
 (defun get-rails-documentation-for-function (function)
   (save-excursion
-    (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" (concat function "\n"))
-    (create-cleaned-output-buffer (concat function " documentation") 'get-ri-console-clean-output)))
+    (get-buffer-create (concat function "-documentation"))
+    (setq output-buffer (concat function "-documentation"))
+    (create-console-buffer-if-does-not-exist "ri-console-buffer" "ri -i -T\n")
+    (set-process-filter (get-buffer-process "ri-console-buffer") 'collect-and-cleanse-output)
+
+    (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" (concat function "\n"))))
+
 
 (defun get-rails-documentation ()
   (interactive)
@@ -102,8 +106,39 @@
 (defun get-rails-function-argument-list (function) 
     (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" (concat function "\n"))
     (create-cleaned-output-buffer (concat function " args") 'get-ri-console-clean-output)
-    (search-forward (concat function "(") nil t)
+    (search-forward (concat function "(") nil t)t
     (let ((begin-of-methods-pos (point)))
       (search-forward ")" nil t)
       (backward-char)
       (buffer-substring begin-of-methods-pos (point))))
+
+; code to use filter to get shell rather than sit-for
+(defun remove-all-in-current-buffer (from)
+  (beginning-of-buffer)
+  (while (search-forward from nil t)
+    (replace-match "" nil t)))
+
+(defun collect-and-cleanse-output (process output)
+  (set-buffer output-buffer)
+  (if (string-match "Nothing known about" output)
+      (message "You need to have buffer created")) ; do something
+  (if (string-match ">>" output)
+      (progn 
+        (insert (ansi-color-apply output))
+        (font-lock-mode)
+        (remove-all-in-current-buffer "\r")
+        (remove-all-in-current-buffer ">>")
+
+        (set-process-buffer process)
+        (erase-buffer)
+        (switch-to-buffer output-buffer))
+
+    (insert (ansi-color-apply output))))
+
+(defun call-interactive-shell-command (buffer start-interactive-shell-command interactive-shell-command)
+  (create-console-buffer-if-does-not-exist buffer start-interactive-shell-command)
+  (set-process-filter (get-buffer-process "ri-console-buffer") 'collect-and-cleanse-output)
+  (process-send-string buffer interactive-shell-command))
+
+
+

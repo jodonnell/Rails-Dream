@@ -24,7 +24,7 @@
   (get-rails-documentation-for-function "form_for")
 
   (let (save-found)
-    (setq save-found (is-found-in-buffer "form_for(" "form_for documentation"))
+    (setq save-found (is-found-in-buffer "form_for(" "form_for-documentation"))
     (assert-nonnil save-found)))
 
 (deftest "test get-rails-function-argument-list"
