@@ -116,7 +116,8 @@
     (create-or-empty-output-buffer (concat class-name " " method-type))
 
     (set-process-filter (get-buffer-process "rails-console-buffer") 'rails-collect-and-cleanse-output)
-    (call-interactive-shell-command "rails-console-buffer" "rails c\n" (concat "(" class-name "." method-type " - Object.methods).sort.collect {|method| puts method.to_s}\n"))))
+    (call-interactive-shell-command "rails-console-buffer" "rails c\n" (concat "(" class-name "." method-type " - Object.methods).sort.collect {|method| puts method.to_s}\n"))
+    (bury-buffer "rails-console-buffer")))
 
 ;;;;;;;;;;
 ;; documentation functions
@@ -130,7 +131,8 @@
     (create-console-buffer-if-does-not-exist "ri-console-buffer" "ri -i -T\n")
 
     (set-process-filter (get-buffer-process "ri-console-buffer") 'ri-collect-and-cleanse-output)
-    (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" (concat function "\n"))))
+    (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" (concat function "\n"))
+    (bury-buffer "ri-console-buffer")))
 
 ;;;;;;;;;;
 ;; arguments functions
@@ -145,5 +147,6 @@
     (create-console-buffer-if-does-not-exist "ri-console-buffer" "ri -i -T\n")
 
     (set-process-filter (get-buffer-process "ri-console-buffer") 'ri-arguments-collect-and-cleanse-output)
-    (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" (concat function "\n"))))
+    (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" (concat function "\n"))
+    (bury-buffer "ri-console-buffer")))
 
