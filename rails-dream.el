@@ -63,10 +63,6 @@
 
     (insert (ansi-color-apply output))))
 
-(defun call-interactive-shell-command (buffer start-interactive-shell-command interactive-shell-command)
-  (create-console-buffer-if-does-not-exist buffer start-interactive-shell-command)
-  (process-send-string buffer interactive-shell-command))
-
 ;;;;;;;;;;
 ;; buffer creation functions
 (defun create-or-empty-output-buffer (buffer-name)
@@ -114,9 +110,10 @@
 (defun get-methods (class-name method-type)
   (save-excursion
     (create-or-empty-output-buffer (concat class-name " " method-type))
+    (create-console-buffer-if-does-not-exist "rails-console-buffer" "rails c\n")
 
     (set-process-filter (get-buffer-process "rails-console-buffer") 'rails-collect-and-cleanse-output)
-    (call-interactive-shell-command "rails-console-buffer" "rails c\n" (concat "(" class-name "." method-type " - Object.methods).sort.collect {|method| puts method.to_s}\n"))
+    (process-send-string "rails-console-buffer" (concat "(" class-name "." method-type " - Object.methods).sort.collect {|method| puts method.to_s}\n"))
     (bury-buffer "rails-console-buffer")))
 
 ;;;;;;;;;;
@@ -131,7 +128,7 @@
     (create-console-buffer-if-does-not-exist "ri-console-buffer" "ri -i -T\n")
 
     (set-process-filter (get-buffer-process "ri-console-buffer") 'ri-collect-and-cleanse-output)
-    (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" (concat function "\n"))
+    (process-send-string "ri-console-buffer" (concat function "\n"))
     (bury-buffer "ri-console-buffer")))
 
 ;;;;;;;;;;
@@ -147,6 +144,7 @@
     (create-console-buffer-if-does-not-exist "ri-console-buffer" "ri -i -T\n")
 
     (set-process-filter (get-buffer-process "ri-console-buffer") 'ri-arguments-collect-and-cleanse-output)
-    (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" (concat function "\n"))
+    (process-send-string "ri-console-buffer" (concat function "\n"))
     (bury-buffer "ri-console-buffer")))
 
+(provide 'rails-dream)
