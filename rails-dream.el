@@ -1,4 +1,7 @@
-;  "class User"
+(defun create-or-empty-output-buffer (buffer-name)
+  (set-buffer (get-buffer-create buffer-name))
+  (erase-buffer)
+  (setq output-buffer buffer-name))
 
 (defun create-console-buffer-if-does-not-exist (buffer-name command)
   (defun open-console-buffer ()
@@ -37,17 +40,16 @@
 
 
 (defun call-interactive-shell-command (buffer start-interactive-shell-command interactive-shell-command)
-  "Use to call an interactive shell command, first call will create the buffer and open the command, all calls will run the command you pass in interactive-shell-command"
   (create-console-buffer-if-does-not-exist buffer start-interactive-shell-command)
-  (set-buffer buffer)
-  (erase-buffer)
-
   (process-send-string buffer interactive-shell-command))
 
 (defun get-methods (class-name method-type)
   (save-excursion
-    (call-interactive-shell-command "rails-console-buffer" "rails c\n" (concat "(" class-name "." method-type " - Object.methods).sort.collect {|method| puts method.to_s}\n"))
-    (create-cleaned-output-buffer (concat class-name " " method-type) 'get-rails-console-clean-method-output)))
+    (create-or-empty-output-buffer (concat class-name " " method-type))
+
+    (set-process-filter (get-buffer-process "rails-console-buffer") 'rails-collect-and-cleanse-output)
+    (call-interactive-shell-command "rails-console-buffer" "rails c\n" (concat "(" class-name "." method-type " - Object.methods).sort.collect {|method| puts method.to_s}\n"))))
+;    (create-cleaned-output-buffer (concat class-name " " method-type) 'get-rails-console-clean-method-output)))
 
 (defun create-cleaned-output-buffer (buffer-name clean-output-function)
     (switch-to-buffer (get-buffer-create buffer-name))
@@ -76,13 +78,11 @@
 
 (defun get-rails-documentation-for-function (function)
   (save-excursion
-    (get-buffer-create (concat function "-documentation"))
-    (setq output-buffer (concat function "-documentation"))
+    (create-or-empty-output-buffer (concat function "-documentation"))
     (create-console-buffer-if-does-not-exist "ri-console-buffer" "ri -i -T\n")
-    (set-process-filter (get-buffer-process "ri-console-buffer") 'collect-and-cleanse-output)
 
+    (set-process-filter (get-buffer-process "ri-console-buffer") 'ri-collect-and-cleanse-output)
     (call-interactive-shell-command "ri-console-buffer" "ri -i -T\n" (concat function "\n"))))
-
 
 (defun get-rails-documentation ()
   (interactive)
@@ -118,27 +118,42 @@
   (while (search-forward from nil t)
     (replace-match "" nil t)))
 
-(defun collect-and-cleanse-output (process output)
+(defun remove-shell-artifacts (output)
+  (insert (ansi-color-apply output))
+  (font-lock-mode)
+  (remove-all-in-current-buffer "\r")
+  (remove-all-in-current-buffer ">>"))
+
+(defun ri-collect-and-cleanse-output (process output)
   (set-buffer output-buffer)
   (if (string-match "Nothing known about" output)
       (message "You need to have buffer created")) ; do something
   (if (string-match ">>" output)
       (progn 
-        (insert (ansi-color-apply output))
-        (font-lock-mode)
-        (remove-all-in-current-buffer "\r")
-        (remove-all-in-current-buffer ">>")
+        (remove-shell-artifacts output)
 
-        (set-process-buffer process)
-        (erase-buffer)
-        (switch-to-buffer output-buffer))
+        (switch-to-buffer output-buffer)
+        (beginning-of-buffer)
+        (kill-line 3))
 
     (insert (ansi-color-apply output))))
 
-(defun call-interactive-shell-command (buffer start-interactive-shell-command interactive-shell-command)
-  (create-console-buffer-if-does-not-exist buffer start-interactive-shell-command)
-  (set-process-filter (get-buffer-process "ri-console-buffer") 'collect-and-cleanse-output)
-  (process-send-string buffer interactive-shell-command))
+(defun rails-collect-and-cleanse-output (process output)
+  (set-buffer output-buffer)
+  (if (string-match "Nothing known about" output)
+      (message "You need to have buffer created"))
+  (if (string-match "nil]" output)
+      (progn 
+        (remove-shell-artifacts output)
 
+        (switch-to-buffer output-buffer)
+        (beginning-of-buffer)
+        (kill-line 1)
+        (end-of-buffer)
+        (previous-line 3)
+        (beginning-of-line)
+        (kill-line 3)
+        (beginning-of-buffer))
 
+    (insert (ansi-color-apply output))))
 
