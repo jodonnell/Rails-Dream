@@ -1,3 +1,6 @@
+; rvm docs generate-ri
+; gem rdoc --all --ri --no-rdoc
+
 ;;;;;;;;;;
 ;; process filter functions
 (defun remove-shell-artifacts (output)
